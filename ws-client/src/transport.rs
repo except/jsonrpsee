@@ -74,6 +74,9 @@ pub struct WsTransportClientBuilder<'a> {
 	/// `Origin` header to pass during the HTTP handshake. If `None`, no
 	/// `Origin` header is passed.
 	pub origin_header: Option<Cow<'a, str>>,
+	/// `Authorization` header to pass during the HTTP handshake. If `None`, no
+	/// `Authorization` header is passed.
+	pub authorization_header: Option<Cow<'a, str>>,
 	/// Max payload size
 	pub max_request_body_size: u32,
 	/// Max number of redirections.
@@ -205,11 +208,15 @@ impl<'a> WsTransportClientBuilder<'a> {
 		mut tls_connector: Option<TlsConnector>,
 	) -> Result<(Sender, Receiver), WsHandshakeError> {
 		let mut target = self.target;
-		let mut headers: ArrayVec<Header, 1> = ArrayVec::new();
+		let mut headers: ArrayVec<Header, 2> = ArrayVec::new();
 		let mut err = None;
 
 		if let Some(origin) = self.origin_header.as_ref() {
 			headers.push(Header { name: "Origin", value: origin.as_bytes() });
+		}
+
+		if let Some(authorization) = self.authorization_header.as_ref() {
+			headers.push(Header { name: "Authorization", value: authorization.as_bytes() });
 		}
 
 		for _ in 0..self.max_redirections {

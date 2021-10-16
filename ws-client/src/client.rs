@@ -110,6 +110,7 @@ pub struct WsClientBuilder<'a> {
 	request_timeout: Duration,
 	connection_timeout: Duration,
 	origin_header: Option<Cow<'a, str>>,
+	authorization_header: Option<Cow<'a, str>>,
 	max_concurrent_requests: usize,
 	max_notifs_per_subscription: usize,
 	max_redirections: usize,
@@ -123,6 +124,7 @@ impl<'a> Default for WsClientBuilder<'a> {
 			request_timeout: Duration::from_secs(60),
 			connection_timeout: Duration::from_secs(10),
 			origin_header: None,
+			authorization_header: None,
 			max_concurrent_requests: 256,
 			max_notifs_per_subscription: 1024,
 			max_redirections: 5,
@@ -158,6 +160,12 @@ impl<'a> WsClientBuilder<'a> {
 	/// Set origin header to pass during the handshake.
 	pub fn origin_header(mut self, origin: Cow<'a, str>) -> Self {
 		self.origin_header = Some(origin);
+		self
+	}
+
+	/// Set authorization header to pass during the handshake.
+	pub fn authorization_header(mut self, authorization: Cow<'a, str>) -> Self {
+		self.authorization_header = Some(authorization);
 		self
 	}
 
@@ -208,6 +216,7 @@ impl<'a> WsClientBuilder<'a> {
 			target: uri.try_into().map_err(|e: WsHandshakeError| Error::Transport(e.into()))?,
 			timeout: self.connection_timeout,
 			origin_header: self.origin_header,
+			authorization_header: self.authorization_header,
 			max_request_body_size: self.max_request_body_size,
 			max_redirections: self.max_redirections,
 		};
